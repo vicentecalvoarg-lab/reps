@@ -1,0 +1,23 @@
+<pyarrow._parquet.ParquetSchema object at 0x00000226BFA47600>
+required group field_id=-1 schema {
+  optional binary field_id=-1 NIT (String);
+  optional binary field_id=-1 Nombre Prestador (String);
+  optional binary field_id=-1 Departamento (String);
+  optional binary field_id=-1 Municipio (String);
+  optional binary field_id=-1 codigo dane (String);
+  optional binary field_id=-1 Codigo EPS (String);
+  optional binary field_id=-1 EPS (String);
+  optional binary field_id=-1 Regimen (String);
+  optional binary field_id=-1 Naturaleza (String);
+  optional int64 field_id=-1 Fecha Proceso (Timestamp(isAdjustedToUTC=false, timeUnit=nanoseconds, is_from_converted_type=false, force_set_converted_type=false));
+  optional binary field_id=-1 Descripcion (String);
+  optional int64 field_id=-1 Valor Programado;
+  optional int64 field_id=-1 Fecha Giro (Timestamp(isAdjustedToUTC=false, timeUnit=nanoseconds, is_from_converted_type=false, force_set_converted_type=false));
+  optional double field_id=-1 Valor Girado;
+  optional binary field_id=-1 Comunicacion Super Salud (String);
+  optional int64 field_id=-1 Fecha comunicacion Super Salud (Timestamp(isAdjustedToUTC=false, timeUnit=nanoseconds, is_from_converted_type=false, force_set_converted_type=false));
+  optional binary field_id=-1 Radicado ADRES (String);
+  optional int64 field_id=-1 Fecha Radicacion ADRES (Timestamp(isAdjustedToUTC=false, timeUnit=nanoseconds, is_from_converted_type=false, force_set_converted_type=false));
+  optional int64 field_id=-1 Fecha disposicion archivo EPS (Timestamp(isAdjustedToUTC=false, timeUnit=nanoseconds, is_from_converted_type=false, force_set_converted_type=false));
+  optional binary field_id=-1 Observacion (String);
+}

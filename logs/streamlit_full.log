@@ -1,0 +1,169 @@
+2025-10-19 20:33:03.483 Starting new event loop for server
+2025-10-19 20:33:03.483 Starting server...
+2025-10-19 20:33:03.483 Serving static content from C:\Users\Admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\streamlit\static
+2025-10-19 20:33:03.504 Server started on port 8501
+2025-10-19 20:33:03.504 Runtime state: RuntimeState.INITIAL -> RuntimeState.NO_SESSIONS_CONNECTED
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://192.168.0.22:8501
+
+2025-10-19 20:33:03.508 Setting up signal handler
+2025-10-19 20:33:03.944 No singleton. Registering one.
+2025-10-19 20:33:03.947 Watcher created for C:\REPS\app\main.py
+2025-10-19 20:33:03.947 AppSession initialized (id=81f61b4d-261d-4623-92ab-e9590f339372)
+2025-10-19 20:33:03.947 Created new session for client 2678671822432. Session ID: 81f61b4d-261d-4623-92ab-e9590f339372
+2025-10-19 20:33:03.947 Runtime state: RuntimeState.NO_SESSIONS_CONNECTED -> RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED
+2025-10-19 20:33:03.951 Watcher created for C:\REPS\app\main.py
+2025-10-19 20:33:03.951 AppSession initialized (id=c0e30e23-9efc-4b38-a714-b718c33744ea)
+2025-10-19 20:33:03.951 Created new session for client 2678672060352. Session ID: c0e30e23-9efc-4b38-a714-b718c33744ea
+2025-10-19 20:33:03.951 Runtime state: RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED -> RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED
+2025-10-19 20:33:04.043 Watcher created for C:\REPS\app\main.py
+2025-10-19 20:33:04.043 AppSession initialized (id=b76ebeec-c22c-484d-8b8a-33760cb15819)
+2025-10-19 20:33:04.043 Created new session for client 2678672062896. Session ID: b76ebeec-c22c-484d-8b8a-33760cb15819
+2025-10-19 20:33:04.043 Runtime state: RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED -> RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED
+2025-10-19 20:33:04.756 Watcher created for C:\REPS\app\main.py
+2025-10-19 20:33:04.756 AppSession initialized (id=ac4f05d5-276a-41ca-a2a3-1e2e8635775c)
+2025-10-19 20:33:04.756 Created new session for client 2678672802640. Session ID: ac4f05d5-276a-41ca-a2a3-1e2e8635775c
+2025-10-19 20:33:04.756 Runtime state: RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED -> RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED
+2025-10-19 20:33:04.776 Received the following back message:
+rerun_script {
+  widget_states {
+  }
+  context_info {
+    timezone: "America/Buenos_Aires"
+    timezone_offset: 180
+    locale: "es-419"
+    url: "http://localhost:8501/"
+    is_embedded: false
+    color_scheme: "light"
+  }
+}
+
+2025-10-19 20:33:04.778 Beginning script thread
+2025-10-19 20:33:04.778 Running script RerunData(widget_states=, context_info=timezone: "America/Buenos_Aires"
+timezone_offset: 180
+locale: "es-419"
+url: "http://localhost:8501/"
+is_embedded: false
+color_scheme: "light"
+)
+2025-10-19 20:33:04.778 Disconnecting files for session with ID ac4f05d5-276a-41ca-a2a3-1e2e8635775c
+2025-10-19 20:33:04.778 Sessions still active: dict_keys([])
+2025-10-19 20:33:04.778 Files: 0; Sessions with files: 0
+2025-10-19 20:33:04.817 Ignoring changed path C:\REPS\app\components\__pycache__\filters.cpython-312.pyc.
+Watched_paths: {'C:\\REPS\\app\\main.py': WatchedPath(md5='bfad8d8de55d585d5c6aaf6385fb1f28', modification_time=1760914121.021111, on_changed=<blinker.base.Signal object at 0x0000026FAD4BE870>)}
+2025-10-19 20:33:04.818 Ignoring changed path C:\REPS\app\components\__pycache__.
+Watched_paths: {'C:\\REPS\\app\\main.py': WatchedPath(md5='bfad8d8de55d585d5c6aaf6385fb1f28', modification_time=1760914121.021111, on_changed=<blinker.base.Signal object at 0x0000026FAD4BE870>)}
+2025-10-19 20:33:04.963 Watcher created for C:\REPS\app\main.py
+2025-10-19 20:33:04.963 AppSession initialized (id=9be5731f-9a58-40bf-a397-a7478f87a2b2)
+2025-10-19 20:33:04.963 Created new session for client 2678793654048. Session ID: 9be5731f-9a58-40bf-a397-a7478f87a2b2
+2025-10-19 20:33:04.963 Runtime state: RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED -> RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED
+2025-10-19 20:33:05.958 Creating new DataCache (key=faa10b93b8e700f768bfef8be824b8a2, persist=None, max_entries=None, ttl=None)
+2025-10-19 20:33:05.958 Cache key: d41d8cd98f00b204e9800998ecf8427e
+2025-10-19 20:33:05.959 Memory cache MISS: d41d8cd98f00b204e9800998ecf8427e
+2025-10-19 20:33:05.959 Memory cache MISS: d41d8cd98f00b204e9800998ecf8427e
+2025-10-19 20:33:06.813 Removing orphaned files...
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\__init__.py
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\components\__init__.py
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\components\filters.py
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\config.py
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\data.py
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\pages\__init__.py
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\components\tables.py
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\utils.py
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\standards.py
+2025-10-19 20:33:07.645 Watcher created for C:\REPS\app\pages\analysis_ips.py
+2025-10-19 20:33:07.645 File/dir timestamp did not change: C:\REPS\app\pages\analysis_ips.py
+2025-10-19 20:33:07.660 Ignoring changed path C:\REPS\app\pages\analysis_ips.py.
+Watched_paths: {'C:\\REPS\\app\\main.py': WatchedPath(md5='bfad8d8de55d585d5c6aaf6385fb1f28', modification_time=1760914121.021111, on_changed=<blinker.base.Signal object at 0x0000026FAD4BE870>), 'C:\\REPS\\app\\__init__.py': WatchedPath(md5='d41d8cd98f00b204e9800998ecf8427e', modification_time=1760906423.116365, on_changed=<blinker.base.Signal object at 0x0000026FB54324B0>), 'C:\\REPS\\app\\config.py': WatchedPath(md5='6f64d5dc17c348aa588205389e9d414d', modification_time=1760906423.116365, on_changed=<blinker.base.Signal object at 0x0000026FB5D3E600>), 'C:\\REPS\\app\\data.py': WatchedPath(md5='eeadd1a5c51f1d568ca5b84d845e2632', modification_time=1760906423.116365, on_changed=<blinker.base.Signal object at 0x0000026FB5D3E9C0>), 'C:\\REPS\\app\\utils.py': WatchedPath(md5='478d07a8d0c1155f85981663bf2c1fb5', modification_time=1760906423.116365, on_changed=<blinker.base.Signal object at 0x0000026FB5D3E900>), 'C:\\REPS\\app\\standards.py': WatchedPath(md5='b7afe6bc029da7c078ccae85f9e0421f', modification_time=1760906423.116365, on_changed=<blinker.base.Signal object at 0x0000026FB5D3E840>)}
+2025-10-19 20:33:07.661 Watcher created for C:\REPS\app\pages\analysis_ips.py
+2025-10-19 20:33:07.663 Watcher created for C:\REPS\app\pages\giro_directo.py
+2025-10-19 20:33:10.248 Received the following back message:
+rerun_script {
+  widget_states {
+  }
+  page_script_hash: "21d485de08225fc3d203d05e50f1a67a"
+  cached_message_hashes: "ab0214769bfc8352c2ef96b5f68d0d22"
+  cached_message_hashes: "a204ea0450b6066a570cfb78d74754aa"
+  context_info {
+    timezone: "America/Buenos_Aires"
+    timezone_offset: 180
+    locale: "es-419"
+    url: "http://localhost:8501/"
+    is_embedded: false
+    color_scheme: "light"
+  }
+}
+
+2025-10-19 20:33:10.249 Beginning script thread
+2025-10-19 20:33:10.250 Running script RerunData(widget_states=, page_script_hash='21d485de08225fc3d203d05e50f1a67a', cached_message_hashes={'ab0214769bfc8352c2ef96b5f68d0d22', 'a204ea0450b6066a570cfb78d74754aa'}, context_info=timezone: "America/Buenos_Aires"
+timezone_offset: 180
+locale: "es-419"
+url: "http://localhost:8501/"
+is_embedded: false
+color_scheme: "light"
+)
+2025-10-19 20:33:10.250 Disconnecting files for session with ID ac4f05d5-276a-41ca-a2a3-1e2e8635775c
+2025-10-19 20:33:10.250 Sessions still active: dict_keys([])
+2025-10-19 20:33:10.250 Files: 0; Sessions with files: 0
+2025-10-19 20:33:10.328 Removing orphaned files...
+2025-10-19 20:33:14.061 Received the following back message:
+rerun_script {
+  widget_states {
+  }
+  page_script_hash: "59206d2aed60bdc4fcc3baf31a473a14"
+  cached_message_hashes: "ab0214769bfc8352c2ef96b5f68d0d22"
+  cached_message_hashes: "a204ea0450b6066a570cfb78d74754aa"
+  context_info {
+    timezone: "America/Buenos_Aires"
+    timezone_offset: 180
+    locale: "es-419"
+    url: "http://localhost:8501/analysis_ips"
+    is_embedded: false
+    color_scheme: "light"
+  }
+}
+
+2025-10-19 20:33:14.062 Beginning script thread
+2025-10-19 20:33:14.062 Running script RerunData(widget_states=, page_script_hash='59206d2aed60bdc4fcc3baf31a473a14', cached_message_hashes={'ab0214769bfc8352c2ef96b5f68d0d22', 'a204ea0450b6066a570cfb78d74754aa'}, context_info=timezone: "America/Buenos_Aires"
+timezone_offset: 180
+locale: "es-419"
+url: "http://localhost:8501/analysis_ips"
+is_embedded: false
+color_scheme: "light"
+)
+2025-10-19 20:33:14.062 Disconnecting files for session with ID ac4f05d5-276a-41ca-a2a3-1e2e8635775c
+2025-10-19 20:33:14.062 Sessions still active: dict_keys([])
+2025-10-19 20:33:14.063 Files: 0; Sessions with files: 0
+2025-10-19 20:33:14.378 Removing orphaned files...
+  Stopping...
+2025-10-19 20:33:42.246 Runtime stopping...
+2025-10-19 20:33:42.246 Runtime state: RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED -> RuntimeState.STOPPING
+2025-10-19 20:33:42.246 Shutting down (id=81f61b4d-261d-4623-92ab-e9590f339372)
+2025-10-19 20:33:42.246 Disconnecting files for session with ID 81f61b4d-261d-4623-92ab-e9590f339372
+2025-10-19 20:33:42.246 Sessions still active: dict_keys([])
+2025-10-19 20:33:42.246 Files: 0; Sessions with files: 0
+2025-10-19 20:33:42.246 Removing orphaned files...
+2025-10-19 20:33:42.247 Shutting down (id=c0e30e23-9efc-4b38-a714-b718c33744ea)
+2025-10-19 20:33:42.247 Disconnecting files for session with ID c0e30e23-9efc-4b38-a714-b718c33744ea
+2025-10-19 20:33:42.247 Sessions still active: dict_keys([])
+2025-10-19 20:33:42.247 Files: 0; Sessions with files: 0
+2025-10-19 20:33:42.247 Removing orphaned files...
+2025-10-19 20:33:42.247 Shutting down (id=b76ebeec-c22c-484d-8b8a-33760cb15819)
+2025-10-19 20:33:42.248 Disconnecting files for session with ID b76ebeec-c22c-484d-8b8a-33760cb15819
+2025-10-19 20:33:42.248 Sessions still active: dict_keys([])
+2025-10-19 20:33:42.248 Files: 0; Sessions with files: 0
+2025-10-19 20:33:42.248 Removing orphaned files...
+2025-10-19 20:33:42.248 Shutting down (id=ac4f05d5-276a-41ca-a2a3-1e2e8635775c)
+2025-10-19 20:33:42.248 Disconnecting files for session with ID ac4f05d5-276a-41ca-a2a3-1e2e8635775c
+2025-10-19 20:33:42.248 Sessions still active: dict_keys([])
+2025-10-19 20:33:42.248 Files: 0; Sessions with files: 0
+2025-10-19 20:33:42.248 Removing orphaned files...
+2025-10-19 20:33:42.262 Shutting down (id=9be5731f-9a58-40bf-a397-a7478f87a2b2)
+2025-10-19 20:33:42.262 Disconnecting files for session with ID 9be5731f-9a58-40bf-a397-a7478f87a2b2
+2025-10-19 20:33:42.262 Sessions still active: dict_keys([])
+2025-10-19 20:33:42.262 Files: 0; Sessions with files: 0
+2025-10-19 20:33:42.262 Removing orphaned files...
+2025-10-19 20:33:42.263 Runtime state: RuntimeState.STOPPING -> RuntimeState.STOPPED

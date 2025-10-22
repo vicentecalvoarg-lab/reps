@@ -1,0 +1,91 @@
+"""
+master_ips_04.py
+Bloque 04: detalle por sede para la combinación seleccionada y pie chart.
+Consume:
+ - ctx['per_sede_combo']
+ - ctx['df_result']
+ - ctx['giro_path'] (opcional para agregar GIROS por NIT)
+"""
+from typing import Dict, Any
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+def run(ctx: Dict[str, Any]) -> Dict[str, Any]:
+    per_sede = ctx.get("per_sede_combo", pd.DataFrame()).copy()
+    df_src = ctx.get("df_result", pd.DataFrame()).copy()
+    helpers = ctx.get("helpers", {})
+    st.write("Bloque 04 — Detalle por sede y gráfico circular")
+    if per_sede is None or per_sede.empty:
+        st.info("No hay registros por sede para mostrar detalle.")
+        ctx.setdefault("outputs", {})["detalle_combo"] = pd.DataFrame()
+        return ctx
+
+    # prepare choices
+    combos = per_sede['COMBO'].astype(str).drop_duplicates().tolist()
+    selected_combo = st.selectbox("Seleccionar SERVICIO | ESPECIALIDAD para detalle", options=["(ninguno)"] + combos, index=0, key="detalle_combo_select_block")
+    if not selected_combo or selected_combo == "(ninguno)":
+        return ctx
+
+    # merge info per sede with df_src info (nit, nombre sede, dept/mun)
+    first_rows = df_src.drop_duplicates(subset=['_sede_key']).reset_index(drop=True)
+    info_cols = ['nit_normalized']
+    sede_name_col = helpers.get("find_col")(df_src, ["nom sede", "nombre sede"])
+    dept_col = helpers.get("find_col")(df_src, ["departamento"])
+    mun_col = helpers.get("find_col")(df_src, ["municipio"])
+    if sede_name_col and sede_name_col in first_rows.columns:
+        info_cols.append(sede_name_col)
+    if dept_col and dept_col in first_rows.columns:
+        info_cols.append(dept_col)
+    if mun_col and mun_col in first_rows.columns:
+        info_cols.append(mun_col)
+    first_info = first_rows.loc[:, ['_sede_key'] + [c for c in info_cols if c in first_rows.columns]].copy()
+
+    sel_rows = per_sede[per_sede['COMBO'].astype(str).str.strip() == selected_combo].merge(first_info, on='_sede_key', how='left')
+    # compute giros per NIT if giro exists
+    nit_to_giros = {}
+    giro_path = ctx.get("giro_path")
+    if giro_path:
+        gdf = helpers.get("load_giro_parquet")(giro_path)
+        if gdf is not None and not gdf.empty:
+            gdf = helpers.get("ensure_nit")(gdf)
+            amount_col = helpers.get("find_col")(gdf, ["valor giro", "valor", "monto", "importe", "valor_total", "total"])
+            if amount_col and amount_col in gdf.columns:
+                gdf['_amount'] = pd.to_numeric(gdf[amount_col], errors='coerce').fillna(0.0)
+            else:
+                numeric_cols = [c for c in gdf.columns if pd.api.types.is_numeric_dtype(gdf[c])]
+                if numeric_cols:
+                    gdf['_amount'] = pd.to_numeric(gdf[numeric_cols[0]], errors='coerce').fillna(0.0)
+                else:
+                    gdf['_amount'] = 0.0
+            agg = gdf.groupby('nit_normalized', as_index=False)['_amount'].sum()
+            agg['GIROS_MM'] = (agg['_amount'] / 1_000_000.0).round(0).astype(int)
+            nit_to_giros = dict(zip(agg['nit_normalized'].astype(str), agg['GIROS_MM'].astype(int)))
+
+    disp = sel_rows.copy()
+    if 'nit_normalized' in disp.columns:
+        disp['NIT_CLEAN'] = disp['nit_normalized'].astype(str).map(lambda x: helpers.get("clean_nit")(x) or "")
+        disp['GIROS (MM COP)'] = disp['nit_normalized'].map(lambda x: nit_to_giros.get(str(x), 0)).fillna(0).astype(int)
+    else:
+        disp['GIROS (MM COP)'] = 0
+    # present table
+    present_cols = []
+    if 'nit_normalized' in disp.columns: present_cols.append('nit_normalized')
+    if sede_name_col in disp.columns: present_cols.append(sede_name_col)
+    present_cols += ['OFERTA_POR_SEDE','GIROS (MM COP)']
+    present_cols = [c for c in present_cols if c in disp.columns]
+    if present_cols:
+        st.dataframe(disp.loc[:, present_cols].sort_values('OFERTA_POR_SEDE', ascending=False).reset_index(drop=True), use_container_width=True)
+
+    # pie chart
+    try:
+        name_col = sede_name_col if sede_name_col in disp.columns else ('nit_normalized' if 'nit_normalized' in disp.columns else '_sede_key')
+        if 'OFERTA_POR_SEDE' in disp.columns and disp['OFERTA_POR_SEDE'].sum() > 0:
+            pie_df = disp.groupby(name_col, as_index=False)['OFERTA_POR_SEDE'].sum()
+            fig = px.pie(pie_df, names=name_col, values='OFERTA_POR_SEDE', hole=0.35)
+            st.plotly_chart(fig, use_container_width=True)
+    except Exception as e:
+        st.error(f"Error en pie chart: {e}")
+
+    ctx.setdefault("outputs", {})["detalle_combo"] = disp
+    return ctx

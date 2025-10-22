@@ -1,0 +1,235 @@
+"""
+master_ips_export.py
+
+Exporter mejorado para MASTER IPS — genera un .xlsx en memoria con:
+ - METADATA
+ - Para cada DataFrame en ctx['outputs'] escribe:
+     - <sheet> (RAW): datos sin transformar (preserva toda la información)
+     - <sheet>_FORM: versión legible con números formateados (Miles/decimales)
+ - DF_RESULT_preview (primera filas) si existe
+ - Ajuste de ancho de columnas y freeze header
+ - Aplicación de formatos numéricos si openpyxl está instalado
+
+Uso:
+  from app.pagina import master_ips_export
+  master_ips_export.show_export_button(ctx)
+
+Requisitos: pandas, openpyxl (opcional pero recomendado)
+"""
+from typing import Dict, Any
+import io
+import datetime
+import pandas as pd
+import numpy as np
+import streamlit as st
+
+try:
+    import openpyxl
+    from openpyxl.utils import get_column_letter
+except Exception:
+    openpyxl = None  # si no está, se seguirá generando el archivo pero sin formatos Excel avanzados
+
+
+def _safe_sheet_name(name: str) -> str:
+    s = str(name)[:31]
+    for ch in [':', '\\', '/', '?', '*', '[', ']']:
+        s = s.replace(ch, '_')
+    return s
+
+
+def _adjust_column_widths(ws, df: pd.DataFrame):
+    """
+    Ajusta anchos de columna en hoja openpyxl según contenido (limitar máximo razonable).
+    """
+    try:
+        max_width = 50
+        for i, col in enumerate(df.columns, start=1):
+            col_letter = get_column_letter(i)
+            # medir ancho teniendo en cuenta encabezado y algunas muestras
+            try:
+                # sample values: header + up to 100 filas
+                sample_vals = [str(col)] + [str(v) for v in df[col].dropna().astype(str).head(100).tolist()]
+                width = max(len(s) for s in sample_vals) + 2
+                width = min(width, max_width)
+                ws.column_dimensions[col_letter].width = width
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+
+def _apply_number_format_to_worksheet(ws, df: pd.DataFrame):
+    """
+    Aplica formato numérico (miles/decimales) a columnas numéricas en la hoja dada.
+    """
+    if openpyxl is None or df is None or df.empty:
+        return
+    nrows = df.shape[0]
+    ncols = df.shape[1]
+    if nrows == 0 or ncols == 0:
+        return
+    for j, col in enumerate(df.columns, start=1):
+        try:
+            is_num = pd.api.types.is_numeric_dtype(df[col])
+        except Exception:
+            is_num = False
+        if not is_num:
+            continue
+        sample = df[col].dropna().head(20)
+        has_decimal = False
+        try:
+            has_decimal = any(float(x) % 1 != 0 for x in sample.astype(float)) if not sample.empty else False
+        except Exception:
+            has_decimal = False
+        fmt = '#,##0.00' if has_decimal else '#,##0'
+        col_letter = get_column_letter(j)
+        for i in range(2, 2 + nrows):
+            cell = ws[f'{col_letter}{i}']
+            try:
+                if isinstance(cell.value, (int, float)):
+                    cell.number_format = fmt
+            except Exception:
+                continue
+
+
+def _make_formatted_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Devuelve una copia 'formateada' para lectura humana:
+    - columnas numéricas convertidas a strings con separadores de miles y 2 decimales cuando corresponde.
+    - mantiene NaN como cadena vacía.
+    """
+    df_fmt = df.copy()
+    num_cols = df_fmt.select_dtypes(include=[np.number]).columns.tolist()
+    for c in num_cols:
+        def fmt_val(x):
+            try:
+                if pd.isna(x):
+                    return ""
+                # Si el valor es entero (sin parte decimal significativa) mostramos sin decimales
+                if float(x).is_integer():
+                    return "{:,.0f}".format(int(round(float(x))))
+                else:
+                    return "{:,.2f}".format(float(x))
+            except Exception:
+                return str(x)
+        df_fmt[c] = df_fmt[c].map(fmt_val)
+    # Convertir tipos datetime a ISO
+    dt_cols = df_fmt.select_dtypes(include=['datetime', 'datetimetz']).columns.tolist()
+    for c in dt_cols:
+        df_fmt[c] = df_fmt[c].dt.strftime('%Y-%m-%d %H:%M:%S').fillna("")
+    return df_fmt
+
+
+def build_excel_bytes_from_ctx(ctx: Dict[str, Any], include_formatted: bool = True) -> bytes:
+    """
+    Construye el workbook en memoria y devuelve bytes.
+    Para cada DataFrame en ctx['outputs'] genera:
+     - sheet RAW (datos sin modificar)
+     - sheet FORM (si include_formatted True) con versión legible
+    """
+    outputs = ctx.get('outputs', {}) or {}
+    buf = io.BytesIO()
+    timestamp = datetime.datetime.now().isoformat(timespec='seconds')
+
+    with pd.ExcelWriter(buf, engine='openpyxl') as writer:
+        # METADATA
+        metadata = {
+            'generated_at': timestamp,
+            'filters': str(ctx.get('filters', {})),
+            'giro_path': str(ctx.get('giro_path', '')),
+            'giro_date_range': str(ctx.get('giro_date_range', '')),
+            'available_outputs': ", ".join(list(outputs.keys()))
+        }
+        md_df = pd.DataFrame(list(metadata.items()), columns=['key', 'value'])
+        md_df.to_excel(writer, sheet_name=_safe_sheet_name('METADATA'), index=False)
+
+        # Escribir cada output
+        for key, val in outputs.items():
+            sheet_base = _safe_sheet_name(str(key))
+            try:
+                if isinstance(val, pd.DataFrame):
+                    df_full = val.copy()
+                    # write RAW data
+                    df_full.to_excel(writer, sheet_name=sheet_base, index=False)
+                    # write formatted version for readability (if requested)
+                    if include_formatted:
+                        try:
+                            df_fmt = _make_formatted_df(df_full)
+                            sheet_fmt = _safe_sheet_name(f"{sheet_base}_FORM")
+                            # if name clash ( > 31 chars ), ensure uniqueness by trimming
+                            if sheet_fmt == sheet_base:
+                                sheet_fmt = sheet_base + "_F"
+                            df_fmt.to_excel(writer, sheet_name=sheet_fmt, index=False)
+                        except Exception:
+                            # si falla formateo, seguir adelante sin hoja FORM
+                            pass
+                else:
+                    # no-DataFrame -> guardar su representación textual en una hoja
+                    pd.DataFrame({str(key): [str(val)]}).to_excel(writer, sheet_name=sheet_base, index=False)
+            except Exception as e:
+                pd.DataFrame({'error': [str(e)]}).to_excel(writer, sheet_name=sheet_base, index=False)
+
+        # Preview de df_result si existe (no truncar)
+        try:
+            df_result = ctx.get('df_result')
+            if isinstance(df_result, pd.DataFrame) and not df_result.empty:
+                preview = df_result.head(200).copy()
+                preview.to_excel(writer, sheet_name=_safe_sheet_name('DF_RESULT_preview'), index=False)
+        except Exception:
+            pass
+
+        # Post-procesado con openpyxl si está disponible
+        if openpyxl is not None:
+            try:
+                wb = writer.book  # openpyxl workbook
+                for key, val in outputs.items():
+                    sheet_base = _safe_sheet_name(str(key))
+                    # aplicar formato a la hoja RAW (si existe)
+                    if sheet_base in wb.sheetnames and isinstance(val, pd.DataFrame) and not val.empty:
+                        ws = wb[sheet_base]
+                        _apply_number_format_to_worksheet(ws, val)
+                        _adjust_column_widths(ws, val)
+                        # freeze header row
+                        ws.freeze_panes = "A2"
+                    # aplicar anchos y freeze a la hoja FORM si existe
+                    sheet_fmt = _safe_sheet_name(f"{sheet_base}_FORM")
+                    if sheet_fmt in wb.sheetnames:
+                        wsf = wb[sheet_fmt]
+                        try:
+                            # la hoja FORM fue escrita desde una DataFrame formateada
+                            df_fmt = _make_formatted_df(val) if isinstance(val, pd.DataFrame) else None
+                            if df_fmt is not None:
+                                _adjust_column_widths(wsf, df_fmt)
+                        except Exception:
+                            _adjust_column_widths(wsf, val if isinstance(val, pd.DataFrame) else pd.DataFrame())
+                        wsf.freeze_panes = "A2"
+                # ajustar preview sheet si existe
+                if 'DF_RESULT_preview' in wb.sheetnames:
+                    ws_preview = wb['DF_RESULT_preview']
+                    try:
+                        _adjust_column_widths(ws_preview, df_result.head(200))
+                        ws_preview.freeze_panes = "A2"
+                    except Exception:
+                        pass
+                # Salvar workbook al buffer
+                buf.seek(0)
+                wb.save(buf)
+            except Exception:
+                # Si algo falla en el post-procesado, ignorar y devolver lo escrito por pandas
+                pass
+
+    buf.seek(0)
+    return buf.read()
+
+
+def show_export_button(ctx: Dict[str, Any], button_label: str = "Exportar todo a Excel (.xlsx)"):
+    st.markdown("### Exportar contenidos")
+    if st.button(button_label):
+        with st.spinner("Generando archivo Excel..."):
+            try:
+                xbytes = build_excel_bytes_from_ctx(ctx, include_formatted=True)
+                now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"master_ips_export_{now}.xlsx"
+                st.download_button("Descargar Excel", data=xbytes, file_name=filename, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            except Exception as e:
+                st.error(f"No fue posible generar el Excel: {e}")

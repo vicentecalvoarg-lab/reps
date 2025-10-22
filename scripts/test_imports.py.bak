@@ -1,0 +1,30 @@
+"""
+Prueba rápida de import de módulos de páginas para capturar excepciones.
+Este script añade el directorio raíz C:/REPS a sys.path para que `import app` funcione
+independientemente del directorio de trabajo actual.
+Ejecutar:
+    python C:\REPS\scripts\test_imports.py
+"""
+import sys
+from pathlib import Path
+import traceback
+
+# Asegurar que C:/REPS (project root, padre de 'scripts') esté en sys.path
+CURRENT_FILE = Path(__file__).resolve()
+PROJECT_ROOT = CURRENT_FILE.parent.parent  # C:/REPS
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+modules = [
+    "app.pages.analysis_ips",
+    "app.pages.giro_directo"
+]
+
+for m in modules:
+    try:
+        print(f"Intentando importar {m} ...")
+        mod = __import__(m, fromlist=['*'])
+        print(f"OK: {m} importado.")
+    except Exception:
+        print(f"ERROR importando {m}:")
+        traceback.print_exc()

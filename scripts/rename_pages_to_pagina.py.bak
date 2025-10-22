@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""
+Renombra la carpeta app/pages -> app/pagina y actualiza referencias "app.pages" -> "app.pagina"
+- Crea copias .bak de los archivos modificados.
+- Asegura que exista __init__.py en la carpeta destino.
+Ejecución:
+    python C:\REPS\scripts\rename_pages_to_pagina.py
+"""
+from pathlib import Path
+import shutil
+import os
+import sys
+import re
+
+PROJECT_ROOT = Path("C:/REPS").resolve()
+SRC = PROJECT_ROOT / "app" / "pages"
+DST = PROJECT_ROOT / "app" / "pagina"
+BACKUP_DIR = PROJECT_ROOT / "app" / "pages_backup"
+
+def abort(msg):
+    print("ERROR:", msg)
+    sys.exit(1)
+
+def ensure_backup():
+    if BACKUP_DIR.exists():
+        print(f"Backup folder already exists: {BACKUP_DIR} (will not overwrite).")
+    else:
+        print(f"Creating backup copy of {SRC} -> {BACKUP_DIR} ...")
+        shutil.copytree(SRC, BACKUP_DIR)
+        print("Backup created.")
+
+def rename_folder():
+    if not SRC.exists():
+        abort(f"Source folder not found: {SRC}")
+    if DST.exists():
+        abort(f"Destination folder already exists: {DST}. Please remove or rename it first.")
+    print(f"Renaming {SRC} -> {DST} ...")
+    os.rename(SRC, DST)
+    print("Rename completed.")
+
+def ensure_init(path: Path):
+    init = path / "__init__.py"
+    if not init.exists():
+        print(f"Creating missing __init__.py in {path}")
+        init.write_text("# package init\n", encoding="utf-8")
+
+def replace_in_files():
+    print("Searching .py files to replace references 'app.pages' -> 'app.pagina' ...")
+    py_files = list(PROJECT_ROOT.rglob("*.py"))
+    pattern = re.compile(r"\bapp\.pages\b")
+    changed = []
+    for p in py_files:
+        try:
+            text = p.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        if pattern.search(text):
+            new_text = pattern.sub("app.pagina", text)
+            # backup original
+            bak = p.with_suffix(p.suffix + ".bak")
+            if not bak.exists():
+                bak.write_text(text, encoding="utf-8")
+            p.write_text(new_text, encoding="utf-8")
+            changed.append(str(p.relative_to(PROJECT_ROOT)))
+    print(f"Updated {len(changed)} files:")
+    for c in changed:
+        print(" -", c)
+
+def main():
+    print("Project root:", PROJECT_ROOT)
+    if not SRC.exists():
+        abort(f"Source folder does not exist: {SRC}")
+    # 1) backup original pages folder
+    ensure_backup()
+    # 2) rename
+    rename_folder()
+    # 3) ensure __init__.py in new folder
+    ensure_init(DST)
+    # 4) replace textual references in .py files
+    replace_in_files()
+    print("DONE. Please run the import test and restart Streamlit:")
+    print("  python C:\\REPS\\scripts\\test_imports.py")
+    print("  cd C:\\REPS && streamlit run app/main.py")
+
+if __name__ == "__main__":
+    main()

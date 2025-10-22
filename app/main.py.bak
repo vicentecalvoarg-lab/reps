@@ -1,0 +1,131 @@
+"""
+Entry point for the modular Streamlit app (centralized filters).
+
+Usage:
+    cd C:/REPS
+    streamlit run app/main.py
+
+Behavior:
+- Ensures project root is on sys.path so `import app` works when running from any CWD.
+- Loads data once via app.data.load_data().
+- Renders a centralized sidebar filters component (single source of truth).
+- Applies high-level filters to produce df_filtered and passes both df_filtered and df_all
+  to the selected page module via module.run(filters, df_filtered, df_all).
+- Menu includes the new "Giro Directo" page (app.pages.giro_directo).
+"""
+import sys
+from pathlib import Path
+import streamlit as st
+from importlib import import_module
+
+# Ensure project root (parent of this file's parent) is on sys.path so `import app` works
+current_file = Path(__file__).resolve()
+project_root = current_file.parent.parent  # C:/REPS
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+# Local imports (after sys.path fix)
+from app.components import filters as filters_comp
+from app.data import load_data
+
+st.set_page_config(page_title="Dashboard IPS - Modular", layout="wide", page_icon="🏥")
+
+st.sidebar.title("Dashboard — Menú principal")
+
+# Menu radio (must match keys in page_map)
+menu = st.sidebar.radio("Selecciona módulo:", [
+    "Análisis IPS",
+    "Giro Directo",
+    "Comparaciones de IPS",
+    "Análisis por tipos de servicios",
+    "Otros (xxxx)",
+])
+
+# Map menu entries -> module path (must match exactly the menu options)
+page_map = {
+    "Análisis IPS": "app.pages.analysis_ips",
+    "Giro Directo": "app.pages.giro_directo",
+    # placeholders for future pages:
+    "Comparaciones de IPS": None,
+    "Análisis por tipos de servicios": None,
+    "Otros (xxxx)": None,
+}
+
+# Load data once (pages can still request a reload if needed)
+try:
+    with st.spinner("Cargando datos..."):
+        df_all = load_data()
+except Exception as e:
+    st.error(f"No se pudo cargar la base de datos: {e}")
+    st.stop()
+
+# Render centralized sidebar filters (populate caches from df_all and render widgets)
+# The component returns a dict of selections (None means no filter / "TODAS")
+filters = filters_comp.sidebar_filters(df=df_all)
+
+# Apply the high-level filters here (None means no filter)
+df_filtered = df_all.copy()
+
+def apply_filter(df, col_name, sel):
+    if sel is None:
+        return df
+    # sel may be a list (from multiselect) or a scalar from selectbox
+    if isinstance(sel, list):
+        return df[df[col_name].isin(sel)]
+    return df[df[col_name] == sel]
+
+# Try to apply filters defensively: only if column exists
+if filters.get("Departamento") is not None and "Departamento" in df_filtered.columns:
+    sel = filters["Departamento"]
+    if isinstance(sel, list):
+        df_filtered = df_filtered[df_filtered['Departamento'].isin(sel)]
+    else:
+        df_filtered = df_filtered[df_filtered['Departamento'] == sel]
+
+if filters.get("Municipio") is not None and "Municipio" in df_filtered.columns:
+    sel = filters["Municipio"]
+    if isinstance(sel, list):
+        df_filtered = df_filtered[df_filtered['Municipio'].isin(sel)]
+    else:
+        df_filtered = df_filtered[df_filtered['Municipio'] == sel]
+
+if filters.get("Naturaleza") is not None and "naturaleza" in df_filtered.columns:
+    sel = filters["Naturaleza"]
+    if isinstance(sel, list):
+        df_filtered = df_filtered[df_filtered['naturaleza'].isin(sel)]
+    else:
+        df_filtered = df_filtered[df_filtered['naturaleza'] == sel]
+
+if filters.get("Nivel") is not None and "num nivel atencion" in df_filtered.columns:
+    sel = filters["Nivel"]
+    if isinstance(sel, list):
+        df_filtered = df_filtered[df_filtered['num nivel atencion'].isin(sel)]
+    else:
+        df_filtered = df_filtered[df_filtered['num nivel atencion'] == sel]
+
+# Show a concise info about rows after filtering in the sidebar
+st.sidebar.markdown(f"Filas luego de filtros: {len(df_filtered):,}")
+
+# Router: load and run the selected page
+module_path = page_map.get(menu)
+if module_path:
+    try:
+        module = import_module(module_path)
+    except Exception as e:
+        st.error(f"No se pudo importar la página seleccionada ({module_path}): {e}")
+        st.stop()
+
+    # Each page must expose run(filters, df_filtered, df_all)
+    try:
+        # Some pages (older) might accept different signatures; we call the standard one.
+        module.run(filters, df_filtered, df_all)
+    except TypeError:
+        # Fallback for pages that expect only filters (backwards compatibility)
+        try:
+            module.run(filters)
+        except Exception as e:
+            st.error(f"Error ejecutando la página: {e}")
+    except Exception as e:
+        st.error(f"Error ejecutando la página: {e}")
+else:
+    st.info("Página no implementada aún. Selecciona 'Análisis IPS' o 'Giro Directo' para comenzar.")
